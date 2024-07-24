@@ -38,6 +38,8 @@ def fetchHS(choice):
         case "Hour":
             data = stock_client.get_stock_bars(requestParams_hour)
             df = data.df
+            df.reset_index(inplace=True)
+            df = df.drop(['symbol'], axis=1)
             csvName = "HS_"+TICKER + "_" + today + "_Hour.csv"
             df.to_csv(csvName, index=False)
             print(df.head())
