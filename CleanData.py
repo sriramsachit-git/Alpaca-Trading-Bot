@@ -15,9 +15,6 @@ def clean_HS():
     # Read the OHLC data
     df = pd.read_csv(csvName)
 
-    #
-    
-
     # Rename the required Colums 
     df = df.rename(columns={'open': 'Open'})
     df = df.rename(columns={'low': 'Low'})
