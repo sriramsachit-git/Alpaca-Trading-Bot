@@ -16,7 +16,7 @@ def clean_HS():
     df = pd.read_csv(csvName)
 
     #
-    df.reset_index(inplace=True)
+    
 
     # Rename the required Colums 
     df = df.rename(columns={'open': 'Open'})
@@ -62,7 +62,7 @@ print(f"Transformed data saved to '{output_csv_name}'")
 
 
 if __name__ == "__main__":
-    
+
     # Clean Historical Data 
     df = clean_HS()
 
