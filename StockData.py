@@ -21,7 +21,7 @@ yesterday = str(date.today() - timedelta(days = 1))
 requestParams_hour = StockBarsRequest(
   symbol_or_symbols = [TICKER],
   timeframe         = TimeFrame.Hour,
-  start             = yesterday,
+  start             = '2018-01-01',
   end               = today,
   adjustment        = 'all'
 )
