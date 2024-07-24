@@ -10,13 +10,28 @@ TICKER = config.TICKER_SYMBOL
 
 trading_client = TradingClient(API_KEY, SECERET_KEY, paper=True)
 
-def LimitaOrder(limit,qty):
+def LimitaOrderSell(limit,qty):
 
     limit_order_data = LimitOrderRequest(
                         symbol=TICKER,
                         limit_price=limit,
                         notional=qty,
                         side=OrderSide.SELL,
+                        time_in_force=TimeInForce.FOK
+                    )
+
+    # Limit order
+    limit_order = trading_client.submit_order(
+                    order_data=limit_order_data
+                )
+
+def LimitaOrderBuy(limit,qty):
+
+    limit_order_data = LimitOrderRequest(
+                        symbol=TICKER,
+                        limit_price=limit,
+                        notional=qty,
+                        side=OrderSide.BUY,
                         time_in_force=TimeInForce.FOK
                     )
 
