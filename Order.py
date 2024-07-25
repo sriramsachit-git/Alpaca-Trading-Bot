@@ -4,6 +4,8 @@ from alpaca.trading.requests import LimitOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca.trading.enums import OrderSide, QueryOrderStatus
 from alpaca.trading.requests import MarketOrderRequest
+from alpaca.trading.requests import LimitOrderRequest, TakeProfitRequest, StopLossRequest
+from alpaca.trading.enums import OrderSide, OrderType, TimeInForce
  
 API_KEY = config.API_KEY
 SECERET_KEY = config.SECRET_KEY
@@ -26,20 +28,20 @@ def LimitOrderSell(limit,qty):
                     order_data=limit_order_data
                 )
 
-def LimitOrderBuy(limit,qty):
+def LimitOrderBuy(Limit_Price,qty,TP,SL):
 
-    limit_order_data = LimitOrderRequest(
-                        symbol=TICKER,
-                        limit_price=limit,
-                        notional=qty,
-                        side=OrderSide.BUY,
-                        time_in_force=TimeInForce.FOK
-                    )
-
+    order_request = LimitOrderRequest(
+                        symbol=TICKER,             # Replace with your desired symbol
+                        qty= qty,                    # Replace with your desired quantity
+                        side=OrderSide.BUY,        # Use OrderSide.SELL for selling
+                        time_in_force=TimeInForce.GTC,  # Good till cancelled
+                        limit_price=Limit_Price,         # Replace with your desired buy price
+                        take_profit=TP,
+                        stop_loss=SL
+)
     # Limit order
-    limit_order = trading_client.submit_order(
-                    order_data=limit_order_data
-                )
+    Limit_order = trading_client.submit_order(
+                    order_data=order_request)
 
 def CloseAllPositions():
     trading_client.close_all_positions(cancel_orders=True)
@@ -69,4 +71,5 @@ if __name__ == "__main__":
     market_order = trading_client.submit_order(
                     order_data=market_order_data
                )
+
     print(LivePositions())
