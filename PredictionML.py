@@ -6,8 +6,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, classification_report
 import numpy as np
 
-def load_and_preprocess_data(filename):
-    df = pd.read_csv(filename)
+def load_and_preprocess_data(df):
+
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df.set_index('timestamp', inplace=True)
 
@@ -30,7 +30,7 @@ def load_and_preprocess_data(filename):
     return X, y, df
 
 def train_model(X, y):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, shuffle=False)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.01, random_state=42, shuffle=False)
     
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
@@ -56,8 +56,10 @@ def live_predict(model, scaler, latest_data):
 if __name__ == "__main__":
     today = str(date.today())
     input_csv_name = f'Stock_Signels_{today}.csv'
+    df = pd.read_csv(input_csv_name)
     
-    X, y, df = load_and_preprocess_data(input_csv_name)
+    X, y, df = load_and_preprocess_data(df)
+    print(X.tail())
     
     model, scaler = train_model(X, y)
     
@@ -66,6 +68,7 @@ if __name__ == "__main__":
     
     # For live prediction, latest_data should be the most recent row(s) of data
     latest_data = X.iloc[-1:].copy()  # Example: get the last row of data
+    print(latest_data)
     live_signal = live_predict(model, scaler, latest_data)
     
     print(f"Live prediction: {live_signal}")
