@@ -19,7 +19,10 @@ def clean_LD():
     csvName = "LiveData.csv"
     # Read the OHLC data
     df = pd.read_csv(csvName)
-     # Rename the required Colums 
+    df = df.rename(columns={'t': 'timestamp'})
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df.set_index('timestamp', inplace=True)
+    # Rename the required Colums 
     df = df.rename(columns={'o': 'Open'})
     df = df.rename(columns={'l': 'Low'})
     df = df.rename(columns={'c': 'Close'})
@@ -28,8 +31,14 @@ def clean_LD():
 
     return df
 
-def clean_HS(df):
-    # Rename the required Colums 
+def clean_HS():
+    # File name
+    csvName = "HS_"+TICKER + "_" + today + "_Hour.csv"
+    # Read the OHLC data
+    df = pd.read_csv(csvName)
+    # Rename the required Colums
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df.set_index('timestamp', inplace=True) 
     df = df.rename(columns={'open': 'Open'})
     df = df.rename(columns={'low': 'Low'})
     df = df.rename(columns={'close': 'Close'})
@@ -38,9 +47,10 @@ def clean_HS(df):
     return df
 
 def concat_data(df_ld,df_hs):
-    return pd.concat([df_hs, df_ld])
+    df = pd.concat([df_hs, df_ld])
+    return df
 
-def TA_Data():
+def TA_Data(df):
     # Calculate technical indicators using pandas_ta
     bbands = ta.bbands(df['Close'], length=20, std=2)
     df['bb_upper'] = bbands['BBU_20_2.0']
@@ -52,39 +62,41 @@ def TA_Data():
     return df
 
 # Generate buy and sell signals based on future price movements
-def generate_signals(df, future_window=10, profit_threshold=0.02):
-    df = clean_HS()
+def generate_signals(df, future_window=10, profit_threshold=0.05):
     df['Future_Close'] = df['Close'].shift(-future_window)
     df['Return'] = (df['Future_Close'] - df['Close']) / df['Close']
     
     df['Signal'] = 0  # Default to no signal
     df.loc[df['Return'] > profit_threshold, 'Signal'] = 1  # Buy signal
-    df.loc[df['Return'] < -profit_threshold, 'Signal'] = -1  # Sell signal
+    df.loc[df['Return'] < -profit_threshold, 'Signal'] = 2  # Sell signal
 
     # Drop rows with NaN values
     df = df.dropna()
 
     # Save the transformed data to a new CSV file
-    output_csv_name = f'Stock_Signels_{today}.csv'
+    output_csv_name = f'Stock_Signals_{today}.csv'
     df.to_csv(output_csv_name, index=False)
     print(f"Transformed data saved to '{output_csv_name}'")
 
     return df
 
 
-def fetch_trainData(df):
+def fetch_trainData():
 
-    df = clean_HS(df) # Clean Historical Data 
-    df = TA_Data() # Add technical Indicators 
+    df = clean_HS() # Clean Historical Data 
+    df = TA_Data(df) # Add technical Indicators 
+    print("techincal indiactors added")
     df = generate_signals(df) # Generate signals
     return df
 
-def fetch_liveData(df_hs):
+def fetch_liveData():
     df_ld = clean_LD()# Clean Live Data
-    df_hs = clean_HS(df_hs)# Clean Historical Data
-    concat_data(df_ld,df_hs)#Concat the Historical Data and Live DataData
-    df_ld = TA_Data() # Add technical Indicators 
-    return df.iloc[-1]
+    df_hs = clean_HS()# Clean Historical Data
+    df_ld = concat_data(df_ld,df_hs)#Concat the Historical Data and Live DataData
+    df_ld = TA_Data(df_ld) # Add technical Indicators
+    
+
+    return df_ld.tail()
 
 
 
@@ -92,9 +104,12 @@ if __name__ == "__main__":
 
     # Clean Historical Data 
     df = clean_HS()
+    #df = TA_Data(df)
+    df =  fetch_trainData()
+    
+    df_ld = fetch_liveData()
 
-    # Generate signals
-    df = generate_signals(df)
+    print(df_ld.tail())
 
     # Plot the data
     fig, axs = plt.subplots(3, figsize=(15, 12), sharex=True)
