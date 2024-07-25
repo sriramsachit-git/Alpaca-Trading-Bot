@@ -34,7 +34,7 @@ def on_message(ws, message):
         df = pd.concat([df, dftemp], ignore_index=True)
 
         print("Message added to DataFrame")
-    df.to_csv("LiveData.csv")
+        df.to_csv("LiveData.csv")
 
 def on_error(ws, error):
     print(f"WebSocket error: {error}")
