@@ -43,6 +43,43 @@ def LimitOrderBuy(Limit_Price,qty,TP,SL):
     Limit_order = trading_client.submit_order(
                     order_data=order_request)
 
+def set_trade_parameters(entry_price):
+    
+    take_profit_percentage = 2.0  # Preset take profit percentage
+    stop_loss_percentage = 1.0     # Preset stop loss percentage
+
+    take_profit_price = entry_price * (1 + take_profit_percentage / 100)
+    stop_loss_price = entry_price * (1 - stop_loss_percentage / 100)
+    stop_loss_limit_price = stop_loss_price - 1.0  # Example stop limit price adjustment
+
+    take_profit_request = TakeProfitRequest(limit_price=take_profit_price)
+    stop_loss_request = StopLossRequest(stop_price=stop_loss_price, limit_price=stop_loss_limit_price)
+
+    return take_profit_request, stop_loss_request
+
+def set_trade_parameters(entry_price):
+    allocated_budget = 1000
+    take_profit_percentage = 2.0  # Preset take profit percentage
+    stop_loss_percentage = 1.0     # Preset stop loss percentage
+
+    # Calculate take profit and stop loss prices
+    take_profit_price = entry_price * (1 + take_profit_percentage / 100)
+    stop_loss_price = entry_price * (1 - stop_loss_percentage / 100)
+    stop_loss_limit_price = stop_loss_price - 1.0  # Example stop limit price adjustment
+
+    # Determine limit price (1% more than entry price)
+    limit_price = entry_price * (1 + 1.0 / 100)
+
+    # Calculate the quantity of shares that can be bought with the allocated budget
+    quantity = int(allocated_budget / limit_price)
+
+    # Create requests
+    take_profit_request = TakeProfitRequest(limit_price=take_profit_price)
+    stop_loss_request = StopLossRequest(stop_price=stop_loss_price, limit_price=stop_loss_limit_price)
+
+    return take_profit_request, stop_loss_request, quantity, limit_price
+
+
 def CloseAllPositions():
     trading_client.close_all_positions(cancel_orders=True)
 
