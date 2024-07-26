@@ -1,4 +1,5 @@
 # Alpaca-Trading-Bot
+
 This repository contains an automated stock trading bot that retrieves historical and live market data, trains an XGBoost model to predict stock movements, and places trades based on these predictions. The bot runs daily before market opens and periodically during the day to ensure timely and accurate trading decisions.
 
 
@@ -26,15 +27,14 @@ This repository contains an automated stock trading bot that retrieves historica
 
    ```
    git clone https://github.com/yourusername/crypto-trading-system.git
+
    cd crypto-trading-system
    ```
 
 2\. Install required packages:
 
    ```
-
    pip install -r requirements.txt
-
    ```
 
 3\. Set up your Alpaca API credentials in `config.py`:
@@ -54,33 +54,25 @@ This repository contains an automated stock trading bot that retrieves historica
 1\. Fetch historical data:
 
    ```
-
    python StockData.py
-
    ```
 
 2\. Clean and prepare data:
 
    ```
-
    python CleanData.py
-
    ```
 
 3\. Train the prediction model:
 
    ```
-
    python PredictionML.py
-
    ```
 
 4\. Run the main trading system:
 
    ```
-
    python MasterControl.py
-
    ```
 
 ## File Structure
