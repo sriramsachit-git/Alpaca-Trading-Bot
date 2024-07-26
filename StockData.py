@@ -67,7 +67,7 @@ def fetchCrypto(choice):
     match choice:
         case "Hour":
           request_params = CryptoBarsRequest(
-                              symbol=[TICKER],
+                              symbol_or_symbols=TICKER,
                               timeframe=TimeFrame.Hour,
                               start='2018-01-01',
                               end=today
@@ -86,7 +86,7 @@ def fetchCrypto(choice):
           return df 
         case "Minute":
           request_params = CryptoBarsRequest(
-                              symbol=[TICKER],
+                              symbol_or_symbols=TICKER,
                               timeframe=TimeFrame.Minute,
                               start='2021-01-01',
                               end=today
@@ -113,7 +113,7 @@ if __name__ == "__main__":
   print(df.tail())
 
   
-  df = fetchHS("Hour")
-  print(df.head())
-  print(df.tail())
+  #df = fetchHS("Hour")
+  #print(df.head())
+  #print(df.tail())
     
