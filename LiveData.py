@@ -4,7 +4,7 @@ import websocket
 from queue import Queue
 import pandas as pd
 import threading
-import time
+
 
 API_KEY = config.API_KEY
 SECRET_KEY = config.SECRET_KEY
@@ -14,7 +14,6 @@ df = pd.DataFrame()
 message_count = 0
 
 def on_open(ws):
-    time.sleep(1)
     print("WebSocket connection opened")
     auth_data = {"action": "auth", "key": API_KEY, "secret": SECRET_KEY}
     ws.send(json.dumps(auth_data))
@@ -30,7 +29,7 @@ def on_message(ws, message):
     print(d)
     message_count += 1
     print(f"Message count: {message_count}")
-    # must ignore the first three messages 
+    # Must ignore the first three messages 
     if message_count>3:
         dftemp = pd.read_json(json.dumps(d))
         df = pd.concat([df, dftemp], ignore_index=True)
