@@ -65,7 +65,6 @@ This repository contains an automated stock trading bot that retrieves historica
 
    ```
    python PredictionML.py
-
    ```
 
 4\. Run the main trading system:
