@@ -27,7 +27,9 @@ This repository contains an automated stock trading bot that retrieves historica
 
    ```
    git clone https://github.com/yourusername/crypto-trading-system.git
-
+   '''
+   
+   '''
    cd crypto-trading-system
    ```
 
