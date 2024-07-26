@@ -60,7 +60,7 @@ def TA_Data(df):
     df['MFI'] = ta.mfi(df['High'], df['Low'], df['Close'], df['Volume'], length=14)
     return df
 
-def generate_signals(df, future_window=20, profit_threshold=0.1):
+def generate_signals(df, future_window=15, profit_threshold=0.1):
     df['Future_Close'] = df['Close'].shift(-future_window)
     df['Return'] = (df['Future_Close'] - df['Close']) / df['Close']
     
