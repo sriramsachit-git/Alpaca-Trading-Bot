@@ -5,7 +5,6 @@ from queue import Queue
 import pandas as pd
 import threading
 
-
 API_KEY = config.API_KEY
 SECRET_KEY = config.SECRET_KEY
 TICKER_SYMBOL = config.TICKER_SYMBOL
