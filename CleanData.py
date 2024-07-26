@@ -1,18 +1,19 @@
 import pandas as pd
 import pandas_ta as ta
-import matplotlib.pyplot as plt
 from datetime import date
 import config
+import plotly.graph_objects as go
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 # Constants
 TICKER = config.TICKER_SYMBOL
 today = str(date.today())
 
 # File name
-csvName = "HS_"+TICKER + "_" + today + "_Hour.csv"
+csvName = "HS_" + "BTC" + "_" + today + "_Hour.csv"
 # Read the OHLC data
 df = pd.read_csv(csvName)
-
 
 def clean_LD():
     # File name
@@ -22,31 +23,23 @@ def clean_LD():
     df = df.rename(columns={'t': 'timestamp'})
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df.set_index('timestamp', inplace=True)
-    # Rename the required Colums 
-    df = df.rename(columns={'o': 'Open'})
-    df = df.rename(columns={'l': 'Low'})
-    df = df.rename(columns={'c': 'Close'})
-    df = df.rename(columns={'h': 'High'})
-    df = df.rename(columns={'v': 'Volume'})
+    # Rename the required Columns 
+    df = df.rename(columns={'o': 'Open', 'l': 'Low', 'c': 'Close', 'h': 'High', 'v': 'Volume'})
 
     return df
 
 def clean_HS():
     # File name
-    csvName = "HS_"+TICKER + "_" + today + "_Hour.csv"
+    csvName = "HS_" + "BTC" + "_" + today + "_Hour.csv"
     # Read the OHLC data
     df = pd.read_csv(csvName)
-    # Rename the required Colums
+    # Rename the required Columns
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df.set_index('timestamp', inplace=True) 
-    df = df.rename(columns={'open': 'Open'})
-    df = df.rename(columns={'low': 'Low'})
-    df = df.rename(columns={'close': 'Close'})
-    df = df.rename(columns={'high': 'High'})
-    df = df.rename(columns={'volume': 'Volume'})
+    df = df.rename(columns={'open': 'Open', 'low': 'Low', 'close': 'Close', 'high': 'High', 'volume': 'Volume'})
     return df
 
-def concat_data(df_ld,df_hs):
+def concat_data(df_ld, df_hs):
     df = pd.concat([df_hs, df_ld])
     return df
 
@@ -61,15 +54,26 @@ def TA_Data(df):
     df['MFI'] = ta.mfi(df['High'], df['Low'], df['Close'], df['Volume'], length=14)
     return df
 
-# Generate buy and sell signals based on future price movements
-def generate_signals(df, future_window=10, profit_threshold=0.05):
+def generate_signals(df, future_window=20, profit_threshold=0.1):
     df['Future_Close'] = df['Close'].shift(-future_window)
     df['Return'] = (df['Future_Close'] - df['Close']) / df['Close']
     
-    df['Signal'] = 0  # Default to no signal
-    df.loc[df['Return'] > profit_threshold, 'Signal'] = 1  # Buy signal
-    df.loc[df['Return'] < -profit_threshold, 'Signal'] = 2  # Sell signal
-
+    # Create buy and sell conditions
+    buy_condition = (df['Return'] > profit_threshold)
+    sell_condition = (df['Return'] < -profit_threshold)
+    
+    # Create initial signals
+    df['Signal'] = 0
+    df.loc[buy_condition, 'Signal'] = 1
+    df.loc[sell_condition, 'Signal'] = 2
+    
+    # Create a mask for valid signals
+    valid_signal_mask = ((df['Signal'] != 0) & 
+                         (df['Signal'].rolling(window=1, min_periods=1).sum().shift() == 0))
+    
+    # Apply the mask to keep only valid signals
+    df['Signal'] = df['Signal'] * valid_signal_mask
+    
     # Drop rows with NaN values
     df = df.dropna()
 
@@ -80,62 +84,72 @@ def generate_signals(df, future_window=10, profit_threshold=0.05):
 
     return df
 
-
 def fetch_trainData():
-
-    df = clean_HS() # Clean Historical Data 
-    df = TA_Data(df) # Add technical Indicators 
-    print("techincal indiactors added")
-    df = generate_signals(df) # Generate signals
+    df = clean_HS()  # Clean Historical Data 
+    df = TA_Data(df)  # Add technical Indicators 
+    print("Technical indicators added")
+    print(df.tail())
+    df = generate_signals(df)  # Generate signals
     return df
 
 def fetch_liveData():
-    df_ld = clean_LD()# Clean Live Data
-    df_hs = clean_HS()# Clean Historical Data
-    df_ld = concat_data(df_ld,df_hs)#Concat the Historical Data and Live DataData
-    df_ld = TA_Data(df_ld) # Add technical Indicators
-    
-
+    df_ld = clean_LD()  # Clean Live Data
+    df_hs = clean_HS()  # Clean Historical Data
+    df_ld = concat_data(df_ld, df_hs)  # Concatenate the Historical Data and Live Data
+    df_ld = TA_Data(df_ld)  # Add technical Indicators
     return df_ld.tail()
 
-
-
 if __name__ == "__main__":
-
-    # Clean Historical Data 
+    # Clean Historical Data
     df = clean_HS()
-    #df = TA_Data(df)
-    df =  fetch_trainData()
-    
-    df_ld = fetch_liveData()
+    df = fetch_trainData()
 
-    print(df_ld.tail())
+    # Create subplots
+    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
+                        vertical_spacing=0.1, subplot_titles=('Price', 'RSI'),
+                        row_heights=[0.7, 0.3])
 
-    # Plot the data
-    fig, axs = plt.subplots(3, figsize=(15, 12), sharex=True)
+    # Add candlestick chart
+    fig.add_trace(go.Candlestick(x=df.index,
+                    open=df['Open'],
+                    high=df['High'],
+                    low=df['Low'],
+                    close=df['Close'],
+                    name='Price'),
+                    row=1, col=1)
 
-    # Plot the closing price and Bollinger Bands
-    axs[0].plot(df['Close'], label='Close', color='blue')
-    axs[0].plot(df['bb_upper'], label='BB Upper', linestyle='--', color='red')
-    axs[0].plot(df['bb_lower'], label='BB Lower', linestyle='--', color='green')
-    axs[0].set_title('Close Price and Bollinger Bands')
-    axs[0].legend()
+    # Add buy signals
+    fig.add_trace(go.Scatter(
+        x=df[df['Signal'] == 1].index,
+        y=df[df['Signal'] == 1]['Close'],
+        mode='markers',
+        marker=dict(size=10, symbol='triangle-up', color='green'),
+        name='Buy Signal'
+    ), row=1, col=1)
 
-    # Plot RSI
-    axs[1].plot(df['RSI'], label='RSI', color='purple')
-    axs[1].axhline(70, linestyle='--', color='red')
-    axs[1].axhline(30, linestyle='--', color='green')
-    axs[1].set_title('Relative Strength Index (RSI)')
-    axs[1].legend()
+    # Add sell signals
+    fig.add_trace(go.Scatter(
+        x=df[df['Signal'] == 2].index,
+        y=df[df['Signal'] == 2]['Close'],
+        mode='markers',
+        marker=dict(size=10, symbol='triangle-down', color='red'),
+        name='Sell Signal'
+    ), row=1, col=1)
 
-    # Plot signals on the closing price chart
-    axs[2].plot(df['Close'], label='Close', color='blue')
-    buy_signals = df[df['Signal'] == 1].index
-    sell_signals = df[df['Signal'] == -1].index
-    axs[2].scatter(buy_signals, df.loc[buy_signals, 'Close'], label='Buy Signal', marker='^', color='green')
-    axs[2].scatter(sell_signals, df.loc[sell_signals, 'Close'], label='Sell Signal', marker='v', color='red')
-    axs[2].set_title('Buy and Sell Signals')
-    axs[2].legend()
+    # Add RSI
+    fig.add_trace(go.Scatter(x=df.index, y=df['RSI'], name='RSI'),
+                    row=2, col=1)
 
-    plt.xlabel('Date')
-    plt.show()
+    # Add RSI overbought/oversold lines
+    fig.add_hline(y=70, line_dash="dash", line_color="red", row=2, col=1)
+    fig.add_hline(y=30, line_dash="dash", line_color="green", row=2, col=1)
+
+    # Update layout
+    fig.update_layout(
+        title=f'{TICKER} Price and Signals',
+        yaxis_title='Price',
+        xaxis_rangeslider_visible=False
+    )
+
+    # Show plot
+    fig.show()
