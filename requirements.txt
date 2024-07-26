@@ -1,0 +1,9 @@
+pandas
+numpy
+scikit-learn
+xgboost
+matplotlib
+plotly
+websocket-client
+alpaca-trade-api
+pandas-ta
