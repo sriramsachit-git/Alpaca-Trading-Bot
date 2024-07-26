@@ -5,7 +5,7 @@ This repository contains an automated stock trading bot that retrieves historica
 
 ## Features
 
-- Fetches historical and live cryptocurrency data
+- Fetches historical and live data
 
 - Implements technical indicators for analysis
 
