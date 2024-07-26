@@ -53,20 +53,22 @@ This repository contains an automated stock trading bot that retrieves historica
 
 1\. Fetch historical data:
 
-   ```
+   ```source-python
    python StockData.py
    ```
 
 2\. Clean and prepare data:
 
-   ```
+   ```source-python
    python CleanData.py
+
    ```
 
 3\. Train the prediction model:
 
    ```
    python PredictionML.py
+
    ```
 
 4\. Run the main trading system:
