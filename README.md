@@ -39,13 +39,6 @@ This repository contains an automated stock trading bot that retrieves historica
 
 3\. Set up your Alpaca API credentials in `config.py`:
 
-   ```
-   API_KEY = 'your_api_key_here'
-
-   SECRET_KEY = 'your_secret_key_here'
-
-   TICKER_SYMBOL = 'BCH/USD'  # or your preferred trading pair
-   ```
 
 ## Usage
 
