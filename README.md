@@ -55,8 +55,6 @@ This repository contains an automated stock trading bot that retrieves historica
 
 git clone https://github.com/sriramsachit-git/Alpaca-Trading-Bot.git
 
-  
-
 cd crypto-trading-system
 
 ```
@@ -68,7 +66,6 @@ cd crypto-trading-system
   
 
 ```
-
 pip install -r requirements.txt
 
 ```
@@ -89,9 +86,7 @@ pip install -r requirements.txt
   
 
 ```
-
 python StockData.py
-
 ```
 
   
@@ -101,9 +96,7 @@ python StockData.py
   
 
 ```
-
 python CleanData.py
-
 ```
 
   
@@ -113,9 +106,7 @@ python CleanData.py
   
 
 ```
-
 python PredictionML.py
-
 ```
 
   
@@ -125,9 +116,7 @@ python PredictionML.py
   
 
 ```
-
 python MasterControl.py
-
 ```
 
   
