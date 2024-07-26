@@ -25,7 +25,7 @@ This repository contains an automated stock trading bot that retrieves historica
 
 1\. Clone this repository:
 
-   ```
+   ```bash
    git clone https://github.com/sriramsachit-git/Alpaca-Trading-Bot.git
 
    cd crypto-trading-system
@@ -34,7 +34,9 @@ This repository contains an automated stock trading bot that retrieves historica
 2\. Install required packages:
 
    
-   ```pip install -r requirements.txt```
+   ```
+   pip install -r requirements.txt
+   ``` 
 
 3\. Set up your Alpaca API credentials in `config.py`:
 
