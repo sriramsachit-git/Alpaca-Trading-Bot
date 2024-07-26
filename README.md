@@ -33,9 +33,8 @@ This repository contains an automated stock trading bot that retrieves historica
 
 2\. Install required packages:
 
-   ```
-   pip install -r requirements.txt
-   ```
+   
+   ```pip install -r requirements.txt```
 
 3\. Set up your Alpaca API credentials in `config.py`:
 
@@ -44,15 +43,11 @@ This repository contains an automated stock trading bot that retrieves historica
 
 1\. Fetch historical data:
 
-   ```
-   python StockData.py
-   ```
+   ```python StockData.py```
 
 2\. Clean and prepare data:
 
-   ```
-   python CleanData.py
-   ```
+   ```python CleanData.py```
 
 3\. Train the prediction model:
 
