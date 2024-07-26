@@ -39,29 +39,26 @@ This repository contains an automated stock trading bot that retrieves historica
 
 3\. Set up your Alpaca API credentials in `config.py`:
 
-   ```python
-
+   ```
    API_KEY = 'your_api_key_here'
 
    SECRET_KEY = 'your_secret_key_here'
 
    TICKER_SYMBOL = 'BCH/USD'  # or your preferred trading pair
-
    ```
 
 ## Usage
 
 1\. Fetch historical data:
 
-   ```source-python
+   ```
    python StockData.py
    ```
 
 2\. Clean and prepare data:
 
-   ```source-python
+   ```
    python CleanData.py
-
    ```
 
 3\. Train the prediction model:
@@ -117,9 +114,7 @@ This software is for educational purposes only. Use it at your own risk. The aut
 
 Contributions, issues, and feature requests are welcome. Feel free to check [issues page](https://github.com/yourusername/crypto-trading-system/issues) if you want to contribute.
 
-## License
 
-[MIT](https://choosealicense.com/licenses/mit/)
 
 ---
 
