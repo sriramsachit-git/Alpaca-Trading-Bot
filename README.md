@@ -25,7 +25,7 @@ This repository contains an automated stock trading bot that retrieves historica
 
 1\. Clone this repository:
 
-   ```bash
+   ```
    git clone https://github.com/sriramsachit-git/Alpaca-Trading-Bot.git
 
    cd crypto-trading-system
