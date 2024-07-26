@@ -7,7 +7,7 @@ import pandas as pd
 import time 
 
 
-df_HS = StockData.fetchCrypto()
+df_HS = StockData.fetchCrypto("Hour")
 print ('Stock Data recived')
 
 df_TrainData = CleanData.fetch_trainData()
