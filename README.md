@@ -67,7 +67,6 @@ cd crypto-trading-system
 
 ```
 pip install -r requirements.txt
-
 ```
 
   
