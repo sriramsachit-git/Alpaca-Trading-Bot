@@ -20,6 +20,7 @@ def clean_LD():
     csvName = "LiveData.csv"
     # Read the OHLC data
     df = pd.read_csv(csvName)
+    # Adding timestamp
     df = df.rename(columns={'t': 'timestamp'})
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df.set_index('timestamp', inplace=True)
@@ -33,13 +34,18 @@ def clean_HS():
     csvName = "HS_" + "BTC" + "_" + today + "_Hour.csv"
     # Read the OHLC data
     df = pd.read_csv(csvName)
-    # Rename the required Columns
+    
+    # Adding timestamp
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df.set_index('timestamp', inplace=True) 
+
+    # Rename the required Columns
     df = df.rename(columns={'open': 'Open', 'low': 'Low', 'close': 'Close', 'high': 'High', 'volume': 'Volume'})
+   
+    print("Historical Data Recived")
     return df
 
-def concat_data(df_ld, df_hs):
+def concat_data(df_ld, df_hs):#Some Technical Indicators need more values to be caluclated 
     df = pd.concat([df_hs, df_ld])
     return df
 
@@ -80,23 +86,37 @@ def generate_signals(df, future_window=20, profit_threshold=0.1):
     # Save the transformed data to a new CSV file
     output_csv_name = f'Stock_Signals_{today}.csv'
     df.to_csv(output_csv_name, index=False)
-    print(f"Transformed data saved to '{output_csv_name}'")
 
+
+    print(f"Transformed data saved to '{output_csv_name}'")
     return df
 
 def fetch_trainData():
-    df = clean_HS()  # Clean Historical Data 
-    df = TA_Data(df)  # Add technical Indicators 
-    print("Technical indicators added")
-    print(df.tail())
-    df = generate_signals(df)  # Generate signals
+
+    # Clean Historical Data
+    df = clean_HS()  
+
+    # Add technical Indicators 
+    df = TA_Data(df)  
+
+    # Generate signals
+    df = generate_signals(df)  
+
     return df
 
 def fetch_liveData():
-    df_ld = clean_LD()  # Clean Live Data
-    df_hs = clean_HS()  # Clean Historical Data
-    df_ld = concat_data(df_ld, df_hs)  # Concatenate the Historical Data and Live Data
-    df_ld = TA_Data(df_ld)  # Add technical Indicators
+    # Clean Live Data
+    df_ld = clean_LD() 
+    
+    # Clean Historical Data
+    df_hs = clean_HS()  
+
+    # Concatenate the Historical Data and Live Data
+    df_ld = concat_data(df_ld, df_hs)  
+
+    # Add technical Indicators
+    df_ld = TA_Data(df_ld)  
+    
     return df_ld.tail()
 
 if __name__ == "__main__":
