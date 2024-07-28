@@ -25,54 +25,29 @@ This repository contains an automated stock trading bot that retrieves historica
 
 1\. Clone this repository:
 
-   ```
-   git clone https://github.com/yourusername/crypto-trading-system.git
+   ```bash
+   git clone https://github.com/yourusername/crypto-trading-system.git
 
-   cd crypto-trading-system
-   ```
+   cd crypto-trading-system
+   ```
 
 2\. Install required packages:
 
-   ```
-   pip install -r requirements.txt
-   ```
+   ```
+   pip install -r requirements.txt
+   ```
 
 3\. Set up your Alpaca API credentials in `config.py`:
 
-   ```
-   API_KEY = 'your_api_key_here'
-
-   SECRET_KEY = 'your_secret_key_here'
-
-   TICKER_SYMBOL = 'BCH/USD'  # or your preferred trading pair
-   ```
 
 ## Usage
 
-1\. Fetch historical data:
 
-   ```
-   python StockData.py
-   ```
+Run the main trading system:
 
-2\. Clean and prepare data:
-
-   ```
-   python CleanData.py
-   ```
-
-3\. Train the prediction model:
-
-   ```
-   python PredictionML.py
-
-   ```
-
-4\. Run the main trading system:
-
-   ```
-   python MasterControl.py
-   ```
+   ```
+   python MasterControl.py
+   ```
 
 ## File Structure
 
@@ -109,10 +84,6 @@ This repository contains an automated stock trading bot that retrieves historica
 ## Disclaimer
 
 This software is for educational purposes only. Use it at your own risk. The authors are not responsible for any financial losses incurred through the use of this system.
-
-## Contributing
-
-Contributions, issues, and feature requests are welcome. Feel free to check [issues page](https://github.com/yourusername/crypto-trading-system/issues) if you want to contribute.
 
 
 
