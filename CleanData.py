@@ -1,8 +1,7 @@
 import pandas as pd
 import pandas_ta as ta
-from datetime import date
+from datetime import date, datetime
 import config
-import plotly.graph_objects as go
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -11,7 +10,7 @@ TICKER = config.TICKER_SYMBOL
 today = str(date.today())
 
 # File name
-csvName = "HS_" + "BTC" + "_" + today + "_Hour.csv"
+csvName = "HS_" + "BTC" + "_" + today + "_Minute.csv"
 # Read the OHLC data
 df = pd.read_csv(csvName)
 
@@ -42,10 +41,10 @@ def clean_HS():
     # Rename the required Columns
     df = df.rename(columns={'open': 'Open', 'low': 'Low', 'close': 'Close', 'high': 'High', 'volume': 'Volume'})
    
-    print("Historical Data Recived")
+    #print("Historical Data Received")
     return df
 
-def concat_data(df_ld, df_hs):#Some Technical Indicators need more values to be caluclated 
+def concat_data(df_ld, df_hs):
     df = pd.concat([df_hs, df_ld])
     return df
 
@@ -60,7 +59,7 @@ def TA_Data(df):
     df['MFI'] = ta.mfi(df['High'], df['Low'], df['Close'], df['Volume'], length=14)
     return df
 
-def generate_signals(df, future_window=15, profit_threshold=0.1):
+def generate_signals(df, future_window=10, profit_threshold=0.02):
     df['Future_Close'] = df['Close'].shift(-future_window)
     df['Return'] = (df['Future_Close'] - df['Close']) / df['Close']
     
@@ -75,7 +74,7 @@ def generate_signals(df, future_window=15, profit_threshold=0.1):
     
     # Create a mask for valid signals
     valid_signal_mask = ((df['Signal'] != 0) & 
-                         (df['Signal'].rolling(window=1, min_periods=1).sum().shift() == 0))
+                         (df['Signal'].rolling(window=3, min_periods=1).sum().shift() == 0))
     
     # Apply the mask to keep only valid signals
     df['Signal'] = df['Signal'] * valid_signal_mask
@@ -83,10 +82,12 @@ def generate_signals(df, future_window=15, profit_threshold=0.1):
     # Drop rows with NaN values
     df = df.dropna()
 
+    # Add a timestamp column with the current time
+    df['Timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
     # Save the transformed data to a new CSV file
     output_csv_name = f'Stock_Signals_{today}.csv'
     df.to_csv(output_csv_name, index=False)
-
 
     print(f"Transformed data saved to '{output_csv_name}'")
     return df
@@ -124,10 +125,14 @@ if __name__ == "__main__":
     df = clean_HS()
     df = fetch_trainData()
 
+    buy_signals = df[df['Signal'] == 1].shape[0]
+    sell_signals = df[df['Signal'] == 2].shape[0]
+
+    print(f"Number of buy signals: {buy_signals}")
+    print(f"Number of sell signals: {sell_signals}")
+
     # Create subplots
-    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
-                        vertical_spacing=0.1, subplot_titles=('Price', 'RSI'),
-                        row_heights=[0.7, 0.3])
+    fig = make_subplots(rows=1, cols=1)
 
     # Add candlestick chart
     fig.add_trace(go.Candlestick(x=df.index,
@@ -155,14 +160,6 @@ if __name__ == "__main__":
         marker=dict(size=10, symbol='triangle-down', color='red'),
         name='Sell Signal'
     ), row=1, col=1)
-
-    # Add RSI
-    fig.add_trace(go.Scatter(x=df.index, y=df['RSI'], name='RSI'),
-                    row=2, col=1)
-
-    # Add RSI overbought/oversold lines
-    fig.add_hline(y=70, line_dash="dash", line_color="red", row=2, col=1)
-    fig.add_hline(y=30, line_dash="dash", line_color="green", row=2, col=1)
 
     # Update layout
     fig.update_layout(

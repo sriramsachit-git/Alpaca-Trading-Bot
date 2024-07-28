@@ -25,14 +25,14 @@ def load_and_preprocess_data(df):
     y = df['Signal']
     
     print("df load_and_preprocess_data")
-    print(df.tail())
+    #print(df.tail())
     
     return X, y, df_temp, features
 
 # Function to train the model
 def train_model(X, y):
     # Split data into training and testing sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.01, random_state=42, shuffle=False)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, shuffle=False)
     
     # Scale the features
     scaler = StandardScaler()

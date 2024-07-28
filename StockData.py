@@ -88,7 +88,7 @@ def fetchCrypto(choice):
           request_params = CryptoBarsRequest(
                               symbol_or_symbols=TICKER,
                               timeframe=TimeFrame.Minute,
-                              start='2021-01-01',
+                              start='2023-01-01',
                               end=today
                       )
 
@@ -100,15 +100,14 @@ def fetchCrypto(choice):
           csvName = "HS_"+"BTC" + "_" + today + "_Minute.csv"
 
           df.to_csv(csvName, index=False)
-          print(df.head())
-          print(df.tail())
           return df 
         
         
     
 if __name__ == "__main__":
 
-  df = fetchCrypto("Hour")
+  #df = fetchCrypto("Minute")
+  df = fetchHS("Minute")
   print(df.head())
   print(df.tail())
 

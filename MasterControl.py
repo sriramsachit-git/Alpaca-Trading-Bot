@@ -7,7 +7,7 @@ import pandas as pd
 import time 
 
 # Fetch historical stock data at an hourly interval
-df_HS = StockData.fetchCrypto("Hour")
+df_HS = StockData.fetchCrypto("Minute")
 print('Stock Data received')
 
 # Fetch the training data
@@ -52,7 +52,9 @@ while True:
         
         # Get the latest data point
         latest_data = df_LD.tail(1)
+
         latest_price = df_LD.iloc[-1].at["Close"]
+        print(latest_price)
         # Predict the live signal using the trained model and scaler
         live_signal = PredictionML.live_predict(model, scaler, latest_data, features)
         print(f"Live signal: {live_signal}")
