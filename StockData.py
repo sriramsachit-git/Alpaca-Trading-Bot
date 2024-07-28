@@ -12,6 +12,7 @@ from alpaca.data import  StockHistoricalDataClient
 from alpaca.data.timeframe import TimeFrame
 from alpaca.data.requests import StockBarsRequest
 
+
 API_KEY = config.API_KEY
 API_SECRETKEY = config.SECRET_KEY
 
