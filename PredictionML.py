@@ -68,7 +68,7 @@ def live_predict(model, scaler, latest_data, features):
 if __name__ == "__main__":
     # Get today's date and construct the input CSV filename
     today = str(date.today())
-    input_csv_name = f'Stock_Signals_{today}.csv'
+    input_csv_name = f'Stock_Signals.csv'
     
     # Read the data from the CSV file
     df = pd.read_csv(input_csv_name)
