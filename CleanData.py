@@ -5,35 +5,22 @@ import config
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-# Constants
-TICKER = config.TICKER_SYMBOL
 today = str(date.today())
 
-# File name
-csvName = "HS_" + "BTC" + "_" + today + "_Minute.csv"
-# Read the OHLC data
-df = pd.read_csv(csvName)
+def clean_LD(df):
 
-def clean_LD():
-    # File name
-    csvName = "LiveData.csv"
-    # Read the OHLC data
-    df = pd.read_csv(csvName)
     # Adding timestamp
     df = df.rename(columns={'t': 'timestamp'})
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df.set_index('timestamp', inplace=True)
+
     # Rename the required Columns 
     df = df.rename(columns={'o': 'Open', 'l': 'Low', 'c': 'Close', 'h': 'High', 'v': 'Volume'})
 
     return df
 
-def clean_HS():
-    # File name
-    csvName = "HS_" + "BTC" + "_" + today + "_Hour.csv"
-    # Read the OHLC data
-    df = pd.read_csv(csvName)
-    
+def clean_HS(df):
+
     # Adding timestamp
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df.set_index('timestamp', inplace=True) 
@@ -41,7 +28,6 @@ def clean_HS():
     # Rename the required Columns
     df = df.rename(columns={'open': 'Open', 'low': 'Low', 'close': 'Close', 'high': 'High', 'volume': 'Volume'})
    
-    #print("Historical Data Received")
     return df
 
 def concat_data(df_ld, df_hs):
@@ -59,7 +45,8 @@ def TA_Data(df):
     df['MFI'] = ta.mfi(df['High'], df['Low'], df['Close'], df['Volume'], length=14)
     return df
 
-def generate_signals(df, future_window=10, profit_threshold=0.02):
+def generate_signals(df , profit_threshold):
+    future_window = 10
     df['Future_Close'] = df['Close'].shift(-future_window)
     df['Return'] = (df['Future_Close'] - df['Close']) / df['Close']
     
@@ -82,32 +69,29 @@ def generate_signals(df, future_window=10, profit_threshold=0.02):
     # Drop rows with NaN values
     df = df.dropna()
 
-    # Add a timestamp column with the current time
-    df['Timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
     # Save the transformed data to a new CSV file
-    output_csv_name = f'Stock_Signals_{today}.csv'
+    output_csv_name = f'Stock_Signals_.csv'
     df.to_csv(output_csv_name, index=False)
 
     print(f"Transformed data saved to '{output_csv_name}'")
     return df
 
-def fetch_trainData():
+def fetch_trainData(df,profit_threshold):
 
     # Clean Historical Data
-    df = clean_HS()  
+    df = clean_HS(df)  
 
     # Add technical Indicators 
     df = TA_Data(df)  
 
     # Generate signals
-    df = generate_signals(df)  
+    df = generate_signals(df,profit_threshold)  
 
     return df
 
-def fetch_liveData():
+def fetch_liveData(df_ld):
     # Clean Live Data
-    df_ld = clean_LD() 
+    df_ld = clean_LD(df) 
     
     # Clean Historical Data
     df_hs = clean_HS()  
@@ -122,8 +106,14 @@ def fetch_liveData():
 
 if __name__ == "__main__":
     # Clean Historical Data
-    df = clean_HS()
-    df = fetch_trainData()
+    
+    # File name
+    csvName = "HS_" + "BTC" ".csv"
+    # Read the OHLC data
+    df = pd.read_csv(csvName)
+
+    df = clean_HS(df)
+    df = fetch_trainData(df)
 
     buy_signals = df[df['Signal'] == 1].shape[0]
     sell_signals = df[df['Signal'] == 2].shape[0]
@@ -163,7 +153,7 @@ if __name__ == "__main__":
 
     # Update layout
     fig.update_layout(
-        title=f'{TICKER} Price and Signals',
+        title=f' Price and Signals',
         yaxis_title='Price',
         xaxis_rangeslider_visible=False
     )
