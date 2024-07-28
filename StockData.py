@@ -45,7 +45,8 @@ def fetchHS(Timeframe,start,end,TICKER):
 
     df.reset_index(inplace=True)
     #df = df.drop(['symbol'], axis=1)
-
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df.set_index('timestamp', inplace=True) 
     csvName =  "HS_"+TICKER+ ".CSV"
     df.to_csv(csvName, index=False)
 
@@ -55,7 +56,7 @@ def fetchHS(Timeframe,start,end,TICKER):
             
         
         
-def fetchCrypto(Timeframe,start,end,TICKER):
+def fetchCrypto(Timeframe,start_time,end_time,TICKER):
     match Timeframe:
         case "Hour":
           time_frame = TimeFrame.Hour
@@ -63,14 +64,14 @@ def fetchCrypto(Timeframe,start,end,TICKER):
         case "Minute":
           time_frame = TimeFrame.Minute
 
-    start_time = datetime.strptime(start, '%m-%d-%Y').date()
+    #start_time = datetime.strptime(start, '%m-%d-%Y').date()
     #end_time  = datetime.strptime(end, '%m-%d-%Y').date()
     
     request_params = CryptoBarsRequest(
                               symbol_or_symbols = TICKER,
                               timeframe = time_frame,
                               start = start_time,
-                              end = end
+                              end = end_time
                       )
 
     bars = client.get_crypto_bars(request_params)
@@ -79,20 +80,23 @@ def fetchCrypto(Timeframe,start,end,TICKER):
 
     df.reset_index(inplace=True)
     #df = df.drop(['symbol'], axis=1) 
-
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df.set_index('timestamp', inplace=True) 
     csvName = "HS_"+"BTC"+".CSV"
-    df.to_csv(csvName, index=False)
+    df.to_csv(csvName, index=True)
 
     return df 
         
         
     
 if __name__ == "__main__":
-
+  timeFrame = "Hour"
+  today = str(date.today())
   yesterday = str(date.today() - timedelta(days = 1))
-  #%m-%d-%Y
-  df = fetchCrypto("Hour","1-12-2023",yesterday)
+  TICKER = "BCH/USD"
   
+  #%m-%d-%Y
+  df = fetchCrypto(timeFrame,yesterday,today,TICKER)
   print(df.head())
   print(df.tail())
 

@@ -7,18 +7,19 @@ import threading
 
 API_KEY = config.API_KEY
 SECRET_KEY = config.SECRET_KEY
-TICKER_SYMBOL = config.TICKER_SYMBOL
 
 df = pd.DataFrame()
 message_count = 0
+ticker = None
 
 def on_open(ws):
+    global ticker
     print("WebSocket connection opened")
     auth_data = {"action": "auth", "key": API_KEY, "secret": SECRET_KEY}
     ws.send(json.dumps(auth_data))
     listen_message = {
         "action": "subscribe",
-        "bars": [TICKER_SYMBOL]
+        "bars": [ticker]
     }
     ws.send(json.dumps(listen_message))
 
@@ -29,7 +30,7 @@ def on_message(ws, message):
     message_count += 1
     print(f"Message count: {message_count}")
     # Must ignore the first three messages 
-    if message_count>3:
+    if message_count > 3:
         dftemp = pd.read_json(json.dumps(d))
         df = pd.concat([df, dftemp], ignore_index=True)
  
@@ -44,19 +45,21 @@ def on_close(ws, close_status_code, close_msg):
 
 def start_websocket():
     socket = "wss://stream.data.alpaca.markets/v1beta3/crypto/us"
-    ws = websocket.WebSocketApp(socket, on_open=lambda ws: on_open(ws), on_message=on_message, on_error=on_error, on_close=on_close)
+    ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_error=on_error, on_close=on_close)
     ws.run_forever()
 
 def live():
     start_websocket()
-    
+    return df
 
-def run_websocket_in_thread():
+def run_websocket_in_thread(T):
+    global ticker
+    ticker = T
     thread = threading.Thread(target=start_websocket)
     thread.daemon = True
     thread.start()
     return thread
 
-
 if __name__ == "__main__":
+    ticker = "BCH/USD"
     start_websocket()
