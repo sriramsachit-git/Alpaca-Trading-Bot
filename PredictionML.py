@@ -21,11 +21,8 @@ def load_and_preprocess_data(df):
     df_temp = df.dropna()
     
     # Separate features (X) and target variable (y)
-    X = df[features]
-    y = df['Signal']
-    
-    print("df load_and_preprocess_data")
-    #print(df.tail())
+    X = df_temp[features]
+    y = df_temp['Signal']
     
     return X, y, df_temp, features
 
@@ -48,7 +45,7 @@ def train_model(X, y):
     
     # Calculate accuracy and classification report
     accuracy = accuracy_score(y_test, y_pred)
-    report = classification_report(y_test, y_pred)
+    report = classification_report(y_test, y_pred, zero_division=0)
     
     print(f"Accuracy: {accuracy}")
     print(f"Classification Report:\n{report}")
