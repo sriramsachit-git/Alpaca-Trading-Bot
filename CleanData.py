@@ -42,7 +42,7 @@ def TA_Data(df):
     df['MFI'] = ta.mfi(df['High'], df['Low'], df['Close'], df['Volume'], length=14)
     return df
 
-def generate_signals(df, future_window=15, profit_threshold=0.1):
+def generate_signals(df, future_window=10, profit_threshold=0.05):
     df['Future_Close'] = df['Close'].shift(-future_window)
     df['Return'] = (df['Future_Close'] - df['Close']) / df['Close']
     print(df.head())
@@ -100,6 +100,14 @@ if __name__ == "__main__":
     
     # Fetch and process training data
     df = fetch_trainData(df_hs)
+     # Count the number of buy signals (Signal == 1)
+    num_buy_signals = df[df['Signal'] == 1].shape[0]
+    
+    # Count the number of sell signals (Signal == 2)
+    num_sell_signals = df[df['Signal'] == 2].shape[0]
+
+    print(f"Number of Buy Signals: {num_buy_signals}")
+    print(f"Number of Sell Signals: {num_sell_signals}")
 
     # Create subplots
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
