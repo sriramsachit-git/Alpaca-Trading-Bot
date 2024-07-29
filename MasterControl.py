@@ -8,10 +8,11 @@ import time
 from datetime import date, datetime, timedelta
 
 today = str(date.today())
-yesterday = str(date.today() - timedelta(days=1))
+# yesterday = str(date.today() - timedelta(days=1))
+yesterday = "2018-01-01"
 
 # Set time frame and strategy threshold
-timeFrame = "Minute"
+timeFrame = "Hour"
 startTime = yesterday
 endTime = today
 TICKER = "BCH/USD"
