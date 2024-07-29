@@ -4,6 +4,7 @@ import websocket
 from queue import Queue
 import pandas as pd
 import threading
+from io import StringIO
 
 API_KEY = config.API_KEY
 SECRET_KEY = config.SECRET_KEY
@@ -31,7 +32,7 @@ def on_message(ws, message):
     print(f"Message count: {message_count}")
     # Must ignore the first three messages 
     if message_count > 3:
-        dftemp = pd.read_json(json.dumps(d))
+        dftemp = pd.read_json(StringIO(json.dumps(d)))
         df = pd.concat([df, dftemp], ignore_index=True)
  
         print("Message added to DataFrame")
