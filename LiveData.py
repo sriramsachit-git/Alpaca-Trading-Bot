@@ -11,19 +11,19 @@ SECRET_KEY = config.SECRET_KEY
 
 df = pd.DataFrame()
 message_count = 0
-ticker = None
+ticker =  ["AAPL","SPY"]
 
 def on_open(ws):
     global ticker
     print("WebSocket connection opened")
     auth_data = {"action": "auth", "key": API_KEY, "secret": SECRET_KEY}
     ws.send(json.dumps(auth_data))
-    listen_message = {
-        "action": "subscribe",
-        "bars": [ticker]
-    }
+    listen_message = {"action":"subscribe", "bars":ticker}
+    
     ws.send(json.dumps(listen_message))
 
+    #listen_message = {"action": "subscribe","bars": ['TSLA']}
+    #ws.send(json.dumps(listen_message))
 def on_message(ws, message):
     global df, message_count
     d = json.loads(message)
@@ -45,7 +45,8 @@ def on_close(ws, close_status_code, close_msg):
     print("Closed connection")
 
 def start_websocket():
-    socket = "wss://stream.data.alpaca.markets/v1beta3/crypto/us"
+    socket = "wss://stream.data.alpaca.markets/v2/iex"
+    #socket = "wss://stream.data.alpaca.markets/v1beta3/crypto/us"
     ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_error=on_error, on_close=on_close)
     ws.run_forever()
 
@@ -62,5 +63,5 @@ def run_websocket_in_thread(T):
     return thread
 
 if __name__ == "__main__":
-    ticker = "BCH/USD"
+    ticker = ["AAPL","SPY"]
     start_websocket()

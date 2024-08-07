@@ -10,22 +10,29 @@ today = str(date.today())
 def clean_LD(df):
     # Adding timestamp
     if 't' in df.columns:
-        df = df.rename(columns={'t': 'timestamp'})
+        df = df.rename(columns={'t': 'timestamp', 'o': 'Open', 'h': 'High', 'l': 'Low', 'c': 'Close', 'v': 'Volume', 'S': 'symbol'})
         df['timestamp'] = pd.to_datetime(df['timestamp'])
         df.set_index('timestamp', inplace=True)
-    # Rename the required Columns 
-    df = df.rename(columns={'o': 'Open', 'l': 'Low', 'c': 'Close', 'h': 'High', 'v': 'Volume'})
     return df
 
 def clean_HS(df):
-    # Adding timestamp
-    if 'timestamp' in df.columns:
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        df.set_index('timestamp', inplace=True) 
-
-    # Rename the required Columns
-    df = df.rename(columns={'open': 'Open', 'low': 'Low', 'close': 'Close', 'high': 'High', 'volume': 'Volume'})
-    return df
+    grouped_dfs = {}
+    
+    # Group by the 'symbol' column
+    grouped = df.groupby('symbol')
+    
+    for symbol, group in grouped:
+        # Adding timestamp if necessary
+        if 'timestamp' in group.columns:
+            group['timestamp'] = pd.to_datetime(group['timestamp'])
+            group.set_index('timestamp', inplace=True)
+        
+        # Rename the required Columns
+        group = group.rename(columns={'open': 'Open', 'low': 'Low', 'close': 'Close', 'high': 'High', 'volume': 'Volume'})
+        
+        grouped_dfs[symbol] = group
+    
+    return grouped_dfs
 
 def concat_data(df_ld, df_hs): # Some Technical Indicators need more values to be calculated
     df = pd.concat([df_hs, df_ld])
@@ -45,7 +52,7 @@ def TA_Data(df):
 def generate_signals(df, future_window=10, profit_threshold=0.05):
     df['Future_Close'] = df['Close'].shift(-future_window)
     df['Return'] = (df['Future_Close'] - df['Close']) / df['Close']
-    print(df.head())
+    
     # Create buy and sell conditions
     buy_condition = (df['Return'] > profit_threshold)
     sell_condition = (df['Return'] < -profit_threshold)
@@ -54,28 +61,31 @@ def generate_signals(df, future_window=10, profit_threshold=0.05):
     df['Signal'] = 0
     df.loc[buy_condition, 'Signal'] = 1
     df.loc[sell_condition, 'Signal'] = 2
-    
 
     # Save the transformed data to a new CSV file
-    output_csv_name = f'Stock_Signals.csv'
+    output_csv_name = f'Stock_Signals_{df["symbol"].iloc[0]}.csv'
     df.to_csv(output_csv_name, index=False)
-    print(df.head())
     print(f"Transformed data saved to '{output_csv_name}'")
     return df
 
 def fetch_trainData(df_hs):
     # Clean Historical Data
-    df = clean_HS(df_hs)  
+    grouped_dfs = clean_HS(df_hs)
+    
+    # Process each stock separately
+    processed_dfs = {}
+    for symbol, df in grouped_dfs.items():
+        # Add technical Indicators 
+        df = TA_Data(df)
+        
+        # Generate signals
+        df = generate_signals(df)
+        
+        processed_dfs[symbol] = df
 
-    # Add technical Indicators 
-    df = TA_Data(df)  
+    return processed_dfs
 
-    # Generate signals
-    df = generate_signals(df)  
-
-    return df
-
-def fetch_liveData( df_hs):
+def fetch_liveData(df_hs):
     df_ld = pd.read_csv("LiveData.csv")
     
     # Clean Live Data
@@ -83,78 +93,86 @@ def fetch_liveData( df_hs):
     
     # Clean Historical Data
     df_hs = clean_HS(df_hs)
-    df_hs = df_hs.tail(20)  
-
-    # Concatenate the Historical Data and Live Data
-    df = concat_data(df_ld, df_hs)  
-
-    # Add technical Indicators
-    df = TA_Data(df)  
     
-    return df.tail()
+    live_data = {}
+    for symbol, df_hs_group in df_hs.items():
+        df_hs_group = df_hs_group.tail(20)  
+
+        # Filter live data for the current symbol
+        df_ld_group = df_ld[df_ld['symbol'] == symbol]
+
+        # Concatenate the Historical Data and Live Data
+        df = concat_data(df_ld_group, df_hs_group)  
+
+        # Add technical Indicators
+        df = TA_Data(df)
+        
+        live_data[symbol] = df.tail()
+
+    return live_data
 
 if __name__ == "__main__":
     # Load data from uploaded files
-    df_hs = pd.read_csv("HS_BTC.CSV")
-    df_ld = pd.read_csv("LiveData.csv")
+    df_hs = pd.read_csv("HS.CSV")
     
-    # Fetch and process training data
-    df = fetch_trainData(df_hs)
-     # Count the number of buy signals (Signal == 1)
-    num_buy_signals = df[df['Signal'] == 1].shape[0]
+    # Fetch and process training data for each stock
+    processed_dfs = fetch_trainData(df_hs)
     
-    # Count the number of sell signals (Signal == 2)
-    num_sell_signals = df[df['Signal'] == 2].shape[0]
+    for symbol, df in processed_dfs.items():
+        # Count the number of buy and sell signals for each stock
+        num_buy_signals = df[df['Signal'] == 1].shape[0]
+        num_sell_signals = df[df['Signal'] == 2].shape[0]
 
-    print(f"Number of Buy Signals: {num_buy_signals}")
-    print(f"Number of Sell Signals: {num_sell_signals}")
+        print(f"Stock: {symbol}")
+        print(f"Number of Buy Signals: {num_buy_signals}")
+        print(f"Number of Sell Signals: {num_sell_signals}")
+        
+        # Plotting for each stock
+        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
+                            vertical_spacing=0.1, subplot_titles=('Price', 'RSI'),
+                            row_heights=[0.7, 0.3])
 
-    # Create subplots
-    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
-                        vertical_spacing=0.1, subplot_titles=('Price', 'RSI'),
-                        row_heights=[0.7, 0.3])
+        # Add candlestick chart
+        fig.add_trace(go.Candlestick(x=df.index,
+                        open=df['Open'],
+                        high=df['High'],
+                        low=df['Low'],
+                        close=df['Close'],
+                        name='Price'),
+                        row=1, col=1)
 
-    # Add candlestick chart
-    fig.add_trace(go.Candlestick(x=df.index,
-                    open=df['Open'],
-                    high=df['High'],
-                    low=df['Low'],
-                    close=df['Close'],
-                    name='Price'),
-                    row=1, col=1)
+        # Add buy signals
+        fig.add_trace(go.Scatter(
+            x=df[df['Signal'] == 1].index,
+            y=df[df['Signal'] == 1]['Close'],
+            mode='markers',
+            marker=dict(size=10, symbol='triangle-up', color='green'),
+            name='Buy Signal'
+        ), row=1, col=1)
 
-    # Add buy signals
-    fig.add_trace(go.Scatter(
-        x=df[df['Signal'] == 1].index,
-        y=df[df['Signal'] == 1]['Close'],
-        mode='markers',
-        marker=dict(size=10, symbol='triangle-up', color='green'),
-        name='Buy Signal'
-    ), row=1, col=1)
+        # Add sell signals
+        fig.add_trace(go.Scatter(
+            x=df[df['Signal'] == 2].index,
+            y=df[df['Signal'] == 2]['Close'],
+            mode='markers',
+            marker=dict(size=10, symbol='triangle-down', color='red'),
+            name='Sell Signal'
+        ), row=1, col=1)
 
-    # Add sell signals
-    fig.add_trace(go.Scatter(
-        x=df[df['Signal'] == 2].index,
-        y=df[df['Signal'] == 2]['Close'],
-        mode='markers',
-        marker=dict(size=10, symbol='triangle-down', color='red'),
-        name='Sell Signal'
-    ), row=1, col=1)
+        # Add RSI
+        fig.add_trace(go.Scatter(x=df.index, y=df['RSI'], name='RSI'),
+                        row=2, col=1)
 
-    # Add RSI
-    fig.add_trace(go.Scatter(x=df.index, y=df['RSI'], name='RSI'),
-                    row=2, col=1)
+        # Add RSI overbought/oversold lines
+        fig.add_hline(y=70, line_dash="dash", line_color="red", row=2, col=1)
+        fig.add_hline(y=30, line_dash="dash", line_color="green", row=2, col=1)
 
-    # Add RSI overbought/oversold lines
-    fig.add_hline(y=70, line_dash="dash", line_color="red", row=2, col=1)
-    fig.add_hline(y=30, line_dash="dash", line_color="green", row=2, col=1)
+        # Update layout
+        fig.update_layout(
+            title=f'{symbol} Price and Signals',
+            yaxis_title='Price',
+            xaxis_rangeslider_visible=False
+        )
 
-    # Update layout
-    fig.update_layout(
-        title='BTC Price and Signals',
-        yaxis_title='Price',
-        xaxis_rangeslider_visible=False
-    )
-
-    # Show plot
-    fig.show()
+        # Show plot
+        fig.show()

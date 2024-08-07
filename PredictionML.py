@@ -20,6 +20,9 @@ def load_and_preprocess_data(df):
     # Drop rows with missing values
     df_temp = df.dropna()
     
+    # Convert signals to binary (0: No action, 1: Buy)
+    df_temp['Signal'] = df_temp['Signal'].apply(lambda x: 1 if x == 1 else 0)
+    
     # Separate features (X) and target variable (y)
     X = df_temp[features]
     y = df_temp['Signal']
@@ -71,7 +74,7 @@ if __name__ == "__main__":
     df = pd.read_csv(input_csv_name)
     
     # Load and preprocess the data
-    X, y, df, features = load_and_preprocess_data(df)
+    X, y, df_temp, features = load_and_preprocess_data(df)
     print(X.tail())
     
     # Train the model

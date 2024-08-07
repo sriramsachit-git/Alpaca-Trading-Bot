@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-signals_data = pd.read_csv('Stock_Signals_2024-07-27.csv')
+signals_data = pd.read_csv('Stock_Signals.csv')
 # Function to backtest the strategy with buy and sell signals
 def backtest_with_sell(df, initial_capital, take_profit, stop_loss):
     capital = initial_capital
@@ -67,7 +67,7 @@ def backtest_with_sell(df, initial_capital, take_profit, stop_loss):
 # Ensure your DataFrame has columns: 'Close', 'Signal'
 # Example: signals_data = pd.read_csv('your_file.csv')
 
-initial_capital = 10000
+initial_capital = 1000
 take_profit = 0.03  # 3%
 stop_loss = 0.01    # 1%
 

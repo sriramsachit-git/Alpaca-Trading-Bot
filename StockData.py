@@ -1,6 +1,7 @@
 import pandas as pd
 import config
 import os 
+import StocksList
 
 from datetime import date,datetime,timedelta
 
@@ -29,12 +30,10 @@ def fetchHS(Timeframe,start,end,TICKER):
       case "Minute":
           time_frame = TimeFrame.Minute
 
-    start_time = datetime.strptime(start, '%m-%d-%Y').date()
-    end_time = datetime.strptime(end, '%m-%d-%Y').date()
-
+    
     requestParams = StockBarsRequest(
-        symbol_or_symbols = [TICKER],
-        timeframe         = TimeFrame.time_frame,
+        symbol_or_symbols = TICKER,
+        timeframe         = time_frame,
         start             = start,
         end               = end,
         adjustment        = 'all'
@@ -47,7 +46,7 @@ def fetchHS(Timeframe,start,end,TICKER):
     #df = df.drop(['symbol'], axis=1)
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df.set_index('timestamp', inplace=True) 
-    csvName =  "HS_"+TICKER+ ".CSV"
+    csvName =  "HS" + ".CSV"
     df.to_csv(csvName, index=False)
 
     print(df.head())
@@ -92,11 +91,11 @@ def fetchCrypto(Timeframe,start_time,end_time,TICKER):
 if __name__ == "__main__":
   timeFrame = "Hour"
   today = str(date.today())
-  yesterday = str(date.today() - timedelta(days = 1))
-  TICKER = "BCH/USD"
+  yesterday = str(date.today() - timedelta(days = 365))
+  TICKER = StocksList.generatelist()
   
   #%m-%d-%Y
-  df = fetchCrypto(timeFrame,yesterday,today,TICKER)
+  df = fetchHS(timeFrame,yesterday,today,TICKER)
   print(df.head())
   print(df.tail())
 
