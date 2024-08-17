@@ -18,10 +18,10 @@ def load_and_preprocess_data(df):
     ]
     
     # Drop rows with missing values
-    df_temp = df.dropna()
+    df_temp = df.dropna().copy()
     
     # Convert signals to binary (0: No action, 1: Buy)
-    df_temp['Signal'] = df_temp['Signal'].apply(lambda x: 1 if x == 1 else 0)
+    df_temp.loc[:, 'Signal'] = df_temp['Signal'].apply(lambda x: 1 if x == 1 else 0)
     
     # Separate features (X) and target variable (y)
     X = df_temp[features]
@@ -32,7 +32,7 @@ def load_and_preprocess_data(df):
 # Function to train the model
 def train_model(X, y):
     # Split data into training and testing sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, shuffle=False)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=42, shuffle=False)
     
     # Scale the features
     scaler = StandardScaler()

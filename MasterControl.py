@@ -9,10 +9,10 @@ import time
 from datetime import date, datetime, timedelta
 
 today = str(date.today())
-yesterday = str(date.today() - timedelta(days=365))
+yesterday = str(date.today() - timedelta(days=10))
 
 # Set time frame and strategy threshold
-timeFrame = "Hour"
+timeFrame = "Minute"
 startTime = yesterday
 endTime = today
 TICKER = StocksList.generatelist()
@@ -43,6 +43,8 @@ def place_order(live_signal, last_close, symbol):
     if live_signal == 1:
         # Set trade parameters (take profit, stop loss, quantity, and limit price)
         TP, SL, qty, Limit_price = Order.set_trade_parameters(last_close)
+        # Round the limit price to the nearest cent
+        Limit_price = round(Limit_price, 2)
         # Place a limit buy order
         Order.LimitOrderBuy(Limit_price, qty, TP, SL, symbol)
         print("Order placed")

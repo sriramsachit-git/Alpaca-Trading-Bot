@@ -5,7 +5,6 @@ import StocksList
 
 from datetime import date,datetime,timedelta
 
-
 from alpaca.data.historical import CryptoHistoricalDataClient
 from alpaca.data.requests import CryptoBarsRequest
 
@@ -63,8 +62,6 @@ def fetchCrypto(Timeframe,start_time,end_time,TICKER):
         case "Minute":
           time_frame = TimeFrame.Minute
 
-    #start_time = datetime.strptime(start, '%m-%d-%Y').date()
-    #end_time  = datetime.strptime(end, '%m-%d-%Y').date()
     
     request_params = CryptoBarsRequest(
                               symbol_or_symbols = TICKER,
@@ -78,10 +75,9 @@ def fetchCrypto(Timeframe,start_time,end_time,TICKER):
     df = bars.df
 
     df.reset_index(inplace=True)
-    #df = df.drop(['symbol'], axis=1) 
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df.set_index('timestamp', inplace=True) 
-    csvName = "HS_"+"BTC"+".CSV"
+    csvName = "HS"+"BTC"+".CSV"
     df.to_csv(csvName, index=True)
 
     return df 
@@ -92,7 +88,7 @@ if __name__ == "__main__":
   timeFrame = "Hour"
   today = str(date.today())
   yesterday = str(date.today() - timedelta(days = 365))
-  TICKER = StocksList.generatelist()
+  TICKER = "AAPl"
   
   #%m-%d-%Y
   df = fetchHS(timeFrame,yesterday,today,TICKER)
@@ -100,7 +96,4 @@ if __name__ == "__main__":
   print(df.tail())
 
   
-  #df = fetchHS("Hour")
-  #print(df.head())
-  #print(df.tail())
-    
+

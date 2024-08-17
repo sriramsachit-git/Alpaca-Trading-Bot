@@ -10,13 +10,12 @@ from alpaca.trading.enums import OrderSide, OrderType, TimeInForce
 # Load API keys and ticker symbol from config file
 API_KEY = config.API_KEY
 SECERET_KEY = config.SECRET_KEY
-TICKER = ""
 
 # Initialize the Alpaca trading client in paper trading mode
 trading_client = TradingClient(API_KEY, SECERET_KEY, paper=True)
 
 # Function to place a limit sell order
-def LimitOrderSell(limit, qty):
+def LimitOrderSell(limit, qty,TICKER):
     limit_order_data = LimitOrderRequest(
         symbol=TICKER,
         limit_price=limit,

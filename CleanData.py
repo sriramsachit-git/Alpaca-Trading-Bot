@@ -3,6 +3,7 @@ import pandas_ta as ta
 from datetime import date
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import numpy as np
 
 # Constants
 today = str(date.today())
@@ -36,6 +37,7 @@ def clean_HS(df):
 
 def concat_data(df_ld, df_hs): # Some Technical Indicators need more values to be calculated
     df = pd.concat([df_hs, df_ld])
+    df = df[~df.index.duplicated(keep='last')]  # Remove duplicate indices
     return df
 
 def TA_Data(df):
@@ -46,27 +48,39 @@ def TA_Data(df):
     df['bb_percent'] = (df['Close'] - df['bb_lower']) / (df['bb_upper'] - df['bb_lower'])
     df['RSI'] = ta.rsi(df['Close'], length=14)
     df['Ultimate_Oscillator'] = ta.uo(df['High'], df['Low'], df['Close'], length1=7, length2=14, length3=28)
+    df['Volume'] = df['Volume'].astype(float)  # Ensure volume is float for MFI calculation
     df['MFI'] = ta.mfi(df['High'], df['Low'], df['Close'], df['Volume'], length=14)
     return df
 
-def generate_signals(df, future_window=10, profit_threshold=0.05):
-    df['Future_Close'] = df['Close'].shift(-future_window)
-    df['Return'] = (df['Future_Close'] - df['Close']) / df['Close']
-    
-    # Create buy and sell conditions
-    buy_condition = (df['Return'] > profit_threshold)
-    sell_condition = (df['Return'] < -profit_threshold)
-    
-    # Create initial signals
+def generate_signals(df, future_windows=range(1, 30), profit_threshold=0.03):
+    # Initialize the Signal column
     df['Signal'] = 0
-    df.loc[buy_condition, 'Signal'] = 1
-    df.loc[sell_condition, 'Signal'] = 2
+    
+    for future_window in future_windows:
+        df[f'Future_Close_{future_window}'] = df['Close'].shift(-future_window)
+        df[f'Return_{future_window}'] = (df[f'Future_Close_{future_window}'] - df['Close']) / df['Close']
+        
+        # Create buy and sell conditions for this future window
+        buy_condition = (df[f'Return_{future_window}'] > profit_threshold)
+        sell_condition = (df[f'Return_{future_window}'] < -profit_threshold)
+        
+        # Update signals based on the conditions
+        df.loc[buy_condition, 'Signal'] = 1
+        df.loc[sell_condition, 'Signal'] = 2
+    
+    # Ensure no consecutive signals in the next 10 rows
+    for i in range(len(df) - 5):
+        if df.at[i, 'Signal'] != 0:
+            # If a signal is found, remove signals from the next 10 rows
+            df.loc[i+1:i+10, 'Signal'] = 0
 
-    # Save the transformed data to a new CSV file
-    output_csv_name = f'Stock_Signals_{df["symbol"].iloc[0]}.csv'
-    df.to_csv(output_csv_name, index=False)
-    print(f"Transformed data saved to '{output_csv_name}'")
+    # Optionally, drop the intermediate columns if you don't need them
+    df.drop(columns=[f'Future_Close_{fw}' for fw in future_windows] + 
+                    [f'Return_{fw}' for fw in future_windows], inplace=True)
+    
     return df
+
+
 
 def fetch_trainData(df_hs):
     # Clean Historical Data
@@ -74,7 +88,9 @@ def fetch_trainData(df_hs):
     
     # Process each stock separately
     processed_dfs = {}
-    for symbol, df in grouped_dfs.items():
+    output_csv_name = 'All_Stock_Signals.csv'  # Name of the consolidated CSV file
+    
+    for i, (symbol, df) in enumerate(grouped_dfs.items()):
         # Add technical Indicators 
         df = TA_Data(df)
         
@@ -82,8 +98,18 @@ def fetch_trainData(df_hs):
         df = generate_signals(df)
         
         processed_dfs[symbol] = df
+        df['symbol'] = symbol  # Add symbol column if not present
+        
+        # Save to CSV: if it's the first symbol, write with header; else append without header
+        if i == 0:
+            df.to_csv(output_csv_name, index=False)
+        else:
+            df.to_csv(output_csv_name, mode='a', header=False, index=False)
+        
+        print(f"Transformed data for {symbol} appended to '{output_csv_name}'")
 
     return processed_dfs
+
 
 def fetch_liveData(df_hs):
     df_ld = pd.read_csv("LiveData.csv")
